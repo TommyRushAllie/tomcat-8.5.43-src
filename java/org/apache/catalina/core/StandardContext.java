@@ -4949,9 +4949,11 @@ public class StandardContext extends ContainerBase
             resourcesStart();
         }
 
+        // 实例化 Loader 实例，它是 tomcat 对于 ClassLoader 的封装，用于支持在运行期间热加载 class
         if (getLoader() == null) {
             WebappLoader webappLoader = new WebappLoader(getParentClassLoader());
             webappLoader.setDelegate(getDelegate());
+            // 使用了读写锁控制并发问题
             setLoader(webappLoader);
         }
 
@@ -5001,11 +5003,13 @@ public class StandardContext extends ContainerBase
 
 
         // Binding thread
+        // 将 Loader 中的 ParallelWebappClassLoader 绑定到当前线程中，并返回 catalian 类加载器
         ClassLoader oldCCL = bindThread();
 
         try {
             if (ok) {
                 // Start our subordinate components, if any
+                // 如果 Loader 是 Lifecycle 实现类，则启动该 Loader
                 Loader loader = getLoader();
                 if (loader instanceof Lifecycle) {
                     ((Lifecycle) loader).start();
@@ -5013,6 +5017,7 @@ public class StandardContext extends ContainerBase
 
                 // since the loader just started, the webapp classloader is now
                 // created.
+                // 设置 ClassLoader 的各种属性
                 setClassLoaderProperty("clearReferencesRmiTargets",
                         getClearReferencesRmiTargets());
                 setClassLoaderProperty("clearReferencesStopThreads",
@@ -5028,6 +5033,7 @@ public class StandardContext extends ContainerBase
 
                 // By calling unbindThread and bindThread in a row, we setup the
                 // current Thread CCL to be the webapp classloader
+                // 解除线程上下文类加载器绑定
                 unbindThread(oldCCL);
                 oldCCL = bindThread();
 
@@ -5060,9 +5066,11 @@ public class StandardContext extends ContainerBase
                 }
 
                 // Notify our interested LifecycleListeners
+                // 发出 CONFIGURE_START_EVENT 事件，ContextConfig 会处理该事件，主要目的是加载 Context 的子容器
                 fireLifecycleEvent(Lifecycle.CONFIGURE_START_EVENT, null);
 
                 // Start our child containers, if not already started
+                // 启动子容器
                 for (Container child : findChildren()) {
                     if (!child.getState().isAvailable()) {
                         child.start();

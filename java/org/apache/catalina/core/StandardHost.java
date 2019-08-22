@@ -820,14 +820,17 @@ public class StandardHost extends ContainerBase implements Host {
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    //StandardHost 重写的 startInternal 方法主要是为了查找报告错误的 Valve 阀门
     @Override
     protected synchronized void startInternal() throws LifecycleException {
 
         // Set error report valve
+        // errorValve默认使用org.apache.catalina.valves.ErrorReportValve
         String errorValve = getErrorReportValveClass();
         if ((errorValve != null) && (!errorValve.equals(""))) {
             try {
                 boolean found = false;
+                // 如果所有的阀门中已经存在这个实例，则不进行处理，否则添加到  Pipeline 中
                 Valve[] valves = getPipeline().getValves();
                 for (Valve valve : valves) {
                     if (errorValve.equals(valve.getClass().getName())) {
@@ -835,6 +838,8 @@ public class StandardHost extends ContainerBase implements Host {
                         break;
                     }
                 }
+                // 如果未找到则添加到 Pipeline 中，需要注意的是，在往 Pipeline 中添加 Valve 阀门时，是添加到 first 后面，basic 前面
+                // 默认情况下，first valve 是 AccessLogValve，basic 是 StandardHostValve
                 if(!found) {
                     Valve valve =
                         (Valve) Class.forName(errorValve).getConstructor().newInstance();
@@ -847,6 +852,7 @@ public class StandardHost extends ContainerBase implements Host {
                         errorValve), t);
             }
         }
+        // 调用父类 ContainerBase，完成统一的启动动作
         super.startInternal();
     }
 

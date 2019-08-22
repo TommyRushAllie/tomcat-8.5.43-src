@@ -684,6 +684,7 @@ public class Catalina {
         long t1 = System.nanoTime();
 
         // Start the new server
+        //1,调用Server的start方法，启动Server组件
         try {
             getServer().start();
         } catch (LifecycleException e) {
@@ -702,6 +703,7 @@ public class Catalina {
         }
 
         // Register shutdown hook
+        //2,注册jvm关闭的勾子程序，用于安全地关闭Server组件，以及其它组件
         if (useShutdownHook) {
             if (shutdownHook == null) {
                 shutdownHook = new CatalinaShutdownHook();
@@ -718,6 +720,7 @@ public class Catalina {
             }
         }
 
+        //3,Bootstrap中会设置await为true，其目的在于让tomcat在shutdown端口阻塞监听关闭命令
         if (await) {
             await();
             stop();

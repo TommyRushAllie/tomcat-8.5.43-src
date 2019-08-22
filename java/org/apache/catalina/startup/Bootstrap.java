@@ -143,11 +143,13 @@ public final class Bootstrap {
 
     private void initClassLoaders() {
         try {
+            // 从catalina.properties中读取common.loader配置作为common类加载的路径
             commonLoader = createClassLoader("common", null);
             if( commonLoader == null ) {
                 // no config file, default to this loader - we might be in a 'single' env.
                 commonLoader=this.getClass().getClassLoader();
             }
+            // 如果未指定server.loader和shared.loader配置，则catalina和shared类加载器都是common类加载器
             catalinaLoader = createClassLoader("server", commonLoader);
             sharedLoader = createClassLoader("shared", commonLoader);
         } catch (Throwable t) {
@@ -161,18 +163,21 @@ public final class Bootstrap {
     private ClassLoader createClassLoader(String name, ClassLoader parent)
         throws Exception {
 
+        // 从catalina.propeties中读取配置，并替换 catalina.home、或者catalina.base，或者环境变量
         String value = CatalinaProperties.getProperty(name + ".loader");
         if ((value == null) || (value.equals("")))
             return parent;
 
         value = replace(value);
 
+        // 遍历目录，并对路径进行处理
         List<Repository> repositories = new ArrayList<>();
 
         String[] repositoryPaths = getPaths(value);
 
         for (String repository : repositoryPaths) {
             // Check for a JAR URL repository
+            //将路径封装成 Repository 对象
             try {
                 @SuppressWarnings("unused")
                 URL url = new URL(repository);
@@ -254,8 +259,10 @@ public final class Bootstrap {
      */
     public void init() throws Exception {
 
+        // 初始化commonLoader、catalinaLoader、sharedLoader，关于ClassLoader的后面再看
         initClassLoaders();
 
+        // 设置上下文类加载器为 catalinaLoader
         Thread.currentThread().setContextClassLoader(catalinaLoader);
 
         SecurityClassLoad.securityClassLoad(catalinaLoader);
@@ -263,10 +270,13 @@ public final class Bootstrap {
         // Load our startup class and call its process() method
         if (log.isDebugEnabled())
             log.debug("Loading startup class");
+
+        // 反射方法实例化Catalina，后面初始化Catalina用了很多反射，不知道意图是什么
         Class<?> startupClass = catalinaLoader.loadClass("org.apache.catalina.startup.Catalina");
         Object startupInstance = startupClass.getConstructor().newInstance();
 
         // Set the shared extensions class loader
+        //为Catalina对象设置其父加载器为shared类加载器，默认情况下就是catalina类加载器
         if (log.isDebugEnabled())
             log.debug("Setting startup class properties");
         String methodName = "setParentClassLoader";
@@ -278,6 +288,7 @@ public final class Bootstrap {
             startupInstance.getClass().getMethod(methodName, paramTypes);
         method.invoke(startupInstance, paramValues);
 
+        // 引用Catalina实例
         catalinaDaemon = startupInstance;
 
     }

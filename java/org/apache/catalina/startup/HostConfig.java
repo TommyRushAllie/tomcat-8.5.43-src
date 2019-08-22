@@ -286,6 +286,7 @@ public class HostConfig implements LifecycleListener {
     public void lifecycleEvent(LifecycleEvent event) {
 
         // Identify the host we are associated with
+        //判断事件是否由 Host 发出，并且为 HostConfig 设置属性
         try {
             host = (Host) event.getLifecycle();
             if (host instanceof StandardHost) {
@@ -419,12 +420,16 @@ public class HostConfig implements LifecycleListener {
 
         File appBase = host.getAppBaseFile();
         File configBase = host.getConfigBaseFile();
+        // 过滤出 webapp 要部署应用的目录
         String[] filteredAppPaths = filterAppPaths(appBase.list());
         // Deploy XML descriptors from configBase
+        // 部署 xml 描述文件
         deployDescriptors(configBase, configBase.list());
         // Deploy WARs
+        // 解压 war 包，但是这里还不会去启动应用
         deployWARs(appBase, filteredAppPaths);
         // Deploy expanded folders
+        // 处理已经存在的目录，前面解压的 war 包不会再行处理
         deployDirectories(appBase, filteredAppPaths);
 
     }

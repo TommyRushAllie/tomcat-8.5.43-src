@@ -285,9 +285,10 @@ public class WebappLoader extends LifecycleMBeanBase
     public void backgroundProcess() {
         if (reloadable && modified()) {
             try {
-                Thread.currentThread().setContextClassLoader
-                    (WebappLoader.class.getClassLoader());
+                // 变更线程上下文类加载器为 webapp 类加载器
+                Thread.currentThread().setContextClassLoader(WebappLoader.class.getClassLoader());
                 if (context != null) {
+                    // 重载 webapp
                     context.reload();
                 }
             } finally {

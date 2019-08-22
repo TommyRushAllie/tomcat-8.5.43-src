@@ -37,6 +37,11 @@ import org.apache.catalina.connector.Response;
  * @author Gunnar Rjnning
  * @author Peter Donald
  */
+
+/**
+ * Valve 是阀门组件，穿插在 Container 容器中，
+ * 可以把它理解成请求拦截器，在 tomcat 接收到网络请求与触发 Servlet 之间执行
+ */
 public interface Valve {
 
 

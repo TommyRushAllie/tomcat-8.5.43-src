@@ -158,6 +158,8 @@ public final class ClassLoaderFactory {
         // Construct the "class path" for this class loader
         Set<URL> set = new LinkedHashSet<>();
 
+        // 对不同类型的 Repository 对象进行处理，将路径转换为URL类型
+        // 因为 URL 类型带有明显的协议，比如jar:xxx、file:xxx
         if (repositories != null) {
             for (Repository repository : repositories)  {
                 if (repository.getType() == RepositoryType.URL) {
@@ -218,12 +220,14 @@ public final class ClassLoaderFactory {
         }
 
         // Construct the class loader itself
+        // 将对应的路径组装成 URL
         final URL[] array = set.toArray(new URL[set.size()]);
         if (log.isDebugEnabled())
             for (int i = 0; i < array.length; i++) {
                 log.debug("  location " + i + " is " + array[i]);
             }
 
+        // 在创建 URLClassLoader 需要考虑到 AccessController 的影响
         return AccessController.doPrivileged(
                 new PrivilegedAction<URLClassLoader>() {
                     @Override

@@ -145,8 +145,14 @@
                resourceName="UserDatabase"/>
       </Realm>
 
+      <!--
+      startStopExecutor是在init阶段创建的线程池<org.apache.catalina.core.ContainerBase.initInternal>，
+      默认情况下 coreSize = maxSize = 1，也就是说默认只有一个线程处理子容器的 start，
+      通过调用 Container.setStartStopThreads(int startStopThreads) 可以改变默认值 1 。
+      如果我们有4个webapp，希望能够尽快启动应用，我们只需要设置Host的startStopThreads值即可 startStopThreads="4"
+      -->
       <Host name="localhost"  appBase="webapps"
-            unpackWARs="true" autoDeploy="true">
+            unpackWARs="true" autoDeploy="true" startStopThreads="4">
 
         <!-- SingleSignOn valve, share authentication between web applications
              Documentation at: /docs/config/valve.html -->

@@ -38,6 +38,10 @@ import java.util.Set;
  * @author Craig R. McClanahan
  * @author Peter Donald
  */
+
+/**
+ * Pipeline是管道组件，用于封装了一组有序的Valve，便于Valve顺序地传递或者处理请求
+ */
 public interface Pipeline {
 
 

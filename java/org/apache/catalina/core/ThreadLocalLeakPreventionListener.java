@@ -214,6 +214,8 @@ public class ThreadLocalLeakPreventionListener implements LifecycleListener,
                     executor = handler.getExecutor();
                 }
 
+                // 销毁线程池 ThreadPoolExecutor，首先将任务队列设为 0，
+                // 再设置coreSize为0（会触发线程池内线程的interrupt），从而销毁空闲的线程
                 if (executor instanceof ThreadPoolExecutor) {
                     ThreadPoolExecutor threadPoolExecutor =
                         (ThreadPoolExecutor) executor;
